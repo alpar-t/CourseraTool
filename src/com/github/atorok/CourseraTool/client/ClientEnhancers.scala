@@ -14,9 +14,8 @@ import org.apache.http.impl.client.BasicCookieStore
  * @author Alpar
  */
 trait NoOpSetup {
-  val httpClient:DefaultHttpClient
   
-  def setup() 
+  def setup(httpClient: DefaultHttpClient) = {}
     
 }
 
@@ -27,22 +26,13 @@ trait NoOpSetup {
  */
 trait AutoRedirect extends NoOpSetup {
 
-  def setup() {
+  override def setup(httpClient: DefaultHttpClient) = {
     httpClient setRedirectStrategy new DefaultRedirectStrategy
   }
   
 }
 
-/**
- * Trait to configure Auto-Cookie support
- * 
- *  @author Alpar
- */
-trait AutoCookie extends NoOpSetup {
+
   
-  def setup {
-     httpClient setCookieStore new BasicCookieStore  
-  }
-  
-}
+
  
