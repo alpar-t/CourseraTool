@@ -16,6 +16,8 @@ import java.util.ArrayList
 import java.net.CookieStore
 import org.apache.http.client.CookieStore
 import org.apache.http.impl.cookie.BasicClientCookie
+import org.apache.http.client.params.ClientPNames
+import org.apache.http.client.params.CookiePolicy
 
 
 
@@ -29,7 +31,8 @@ class SimpleHttpRequest(httpClient:DefaultHttpClient)  extends NoOpSetup {
   setup(httpClient)
   
   def get(url:String) : HtmlResponse = {    
-      new HtmlResponse(httpClient execute new HttpGet(url))
+      val get = new HttpGet(url)
+      new HtmlResponse(httpClient execute get )
   }
   
   def post(url:String, params:Map[String, String]) : HtmlResponse = {    
@@ -81,13 +84,12 @@ object CheckedHttpRequest {
 }
 
 
-class SiteBrowser(baseUrl:String)  {
- 
-  val jar = new BasicCookieStore
+protected class SiteBrowser(val baseUrl:String, val jar:BasicCookieStore, val req:ConvenientHttpRequest)  {  
   
   def get(uri: String) = {
-     val req = new ConvenientHttpRequest
      req.client setCookieStore  jar 
+     req.client.getParams.setParameter(ClientPNames.COOKIE_POLICY,
+            CookiePolicy.BROWSER_COMPATIBILITY);
      CheckedHttpRequest (req) { req =>  req.get(baseUrl + uri) }
   } 
   
@@ -100,6 +102,23 @@ class SiteBrowser(baseUrl:String)  {
   def addCookie(param:(String,String)) {
     val cookie = new BasicClientCookie(param._1, param._2)
     jar addCookie(cookie)
+  }
+  
+  def addCookie(param:(String,String), domain:String) {
+    val cookie = new BasicClientCookie(param._1, param._2)
+    cookie setDomain domain
+    jar addCookie(cookie)
+  }
+  
+}
+
+object SiteBrowser {
+  
+  val jar = new BasicCookieStore
+  val req = new ConvenientHttpRequest 
+  
+  def apply(baseUrl:String) = {
+    new SiteBrowser(baseUrl, jar, req)
   }
   
 }

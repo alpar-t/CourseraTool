@@ -10,7 +10,8 @@ import com.codahale.jerkson.JsonSnakeCase
  */
 @JsonSnakeCase
 case class CourseDetails (
-    val homeLink:String
+    val homeLink:String,
+    val active:Boolean
 ) {
     
     override def toString:String = {
